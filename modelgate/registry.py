@@ -16,7 +16,7 @@ from datetime import datetime, timezone
 
 import mlflow
 from mlflow.tracking import MlflowClient
-from mlflow.exceptions import MlflowException, RestException
+from mlflow.exceptions import MlflowException
 
 from modelgate.config import settings
 from modelgate.utils import get_logger
@@ -52,11 +52,18 @@ class Registry:
         self._ensure_model_exists()
 
     def _ensure_model_exists(self) -> None:
+        # NOTE: with the sqlalchemy backend the "not found" error is a
+        # plain MlflowException, not a RestException. caught both by
+        # matching on error_code and falling back to a string check.
         try:
             self.client.get_registered_model(self.model_name)
-        except RestException:
-            self.client.create_registered_model(self.model_name)
-            logger.info(f"Created registered model: {self.model_name}")
+        except MlflowException as e:
+            err_code = getattr(e, "error_code", "")
+            if err_code == "RESOURCE_DOES_NOT_EXIST" or "not found" in str(e).lower():
+                self.client.create_registered_model(self.model_name)
+                logger.info(f"Created registered model: {self.model_name}")
+            else:
+                raise
 
     # ---- aliases --------------------------------------------------------
 
@@ -68,14 +75,17 @@ class Registry:
         try:
             self.client.delete_registered_model_alias(self.model_name, alias)
             logger.info(f"Cleared alias @{alias} on {self.model_name}")
-        except RestException:
+        except MlflowException:
             pass
 
     def get_alias_version(self, alias: str) -> VersionInfo | None:
         try:
             mv = self.client.get_model_version_by_alias(self.model_name, alias)
-        except RestException:
-            return None
+        except MlflowException as e:
+            err_code = getattr(e, "error_code", "")
+            if err_code == "RESOURCE_DOES_NOT_EXIST" or "alias" in str(e).lower():
+                return None
+            raise
         return self._version_info(mv)
 
     # ---- versions -------------------------------------------------------
@@ -89,7 +99,7 @@ class Registry:
     def get_version(self, version: int) -> VersionInfo | None:
         try:
             mv = self.client.get_model_version(self.model_name, str(version))
-        except RestException:
+        except MlflowException:
             return None
         return self._version_info(mv)
 
