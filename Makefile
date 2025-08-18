@@ -1,4 +1,4 @@
-.PHONY: help install install-dev clean lint format test train
+.PHONY: help install install-dev clean lint format test train retrain serve
 
 help:
 	@echo "ModelGate -- targets"
@@ -26,6 +26,12 @@ test:
 
 train:
 	python -m modelgate.train --week 0
+
+retrain:
+	python -m modelgate.retrain --week 1
+
+serve:
+	uvicorn modelgate.serve:app --reload --port 8000
 
 clean:
 	rm -rf build dist *.egg-info .pytest_cache .mypy_cache .ruff_cache

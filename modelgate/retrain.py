@@ -30,7 +30,11 @@ def _load_pipeline_from_version(version: int):
     info = reg.get_version(version)
     if info is None:
         raise ValueError(f"No version {version} for {reg.model_name}")
-    uri = f"models:/{reg.model_name}/{version}"
+    # use the run_id directly. the cleaner `models:/<name>@<alias>` URI
+    # blows up on windows because mlflow's artifact resolver tries to
+    # treat the windows drive letter as a URI scheme. burned an
+    # afternoon on this. see NOTES.md.
+    uri = f"runs:/{info.run_id}/model"
     return mlflow.sklearn.load_model(uri), info
 
 

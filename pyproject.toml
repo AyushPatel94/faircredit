@@ -35,6 +35,12 @@ dev = [
     "ipykernel>=6.29",
     "jupyterlab>=4.0",
 ]
+serve = [
+    "fastapi>=0.109",
+    "uvicorn[standard]>=0.27",
+    "prometheus-client>=0.19",
+]
+
 [project.scripts]
 modelgate = "modelgate.cli:app"
 

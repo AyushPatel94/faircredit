@@ -1,14 +1,18 @@
 # ModelGate
 
-Automated model retraining and promotion. Work in progress.
+Automated model retraining with champion / challenger promotion and
+rollback. Built on MLflow Model Registry's Aliases API.
 
-## Setup
+## Quickstart
 
 ```bash
-python -m venv .venv
-.venv\Scripts\activate
-pip install -e ".[dev]"
+pip install -e ".[dev,serve]"
+python -m modelgate.retrain --week 0
+python -m modelgate.retrain --week 1
+make serve
 ```
+
+See ADRs in docs/decisions/.
 
 ## License
 
