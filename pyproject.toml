@@ -40,6 +40,14 @@ serve = [
     "uvicorn[standard]>=0.27",
     "prometheus-client>=0.19",
 ]
+fairness = [
+    "fairlearn>=0.10",
+]
+viz = [
+    "matplotlib>=3.8",
+    "seaborn>=0.13",
+    "plotly>=5.18",
+]
 
 [project.scripts]
 modelgate = "modelgate.cli:app"
